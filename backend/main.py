@@ -63,7 +63,8 @@ def clone_github_repo(repo_url: str) -> str:
 
 def extract_rule_info(rule: dict) -> dict:
     """
-    Extract relevant information from a RGPD rule for frontend display.
+    Extract only frontend-relevant information from a RGPD rule.
+    Excludes internal details like patterns, file patterns, and agent prompts.
     
     Args:
         rule: Complete rule object from rgpd_rules.json
@@ -78,40 +79,12 @@ def extract_rule_info(rule: dict) -> dict:
         "article_url": rule.get("article_url"),
         "priority": rule.get("priority"),
         "description": rule.get("description", ""),
-        "code_checks": {
-            "enabled": rule.get("code_checks", {}).get("enabled", False),
-            "red_patterns": [
-                {
-                    "pattern": p.get("pattern"),
-                    "severity": p.get("severity"),
-                    "explanation": p.get("explanation"),
-                    "recommendation": p.get("recommendation")
-                }
-                for p in rule.get("code_checks", {}).get("red_patterns", [])
-            ],
-            "green_patterns": [
-                {
-                    "pattern": p.get("pattern"),
-                    "explanation": p.get("explanation")
-                }
-                for p in rule.get("code_checks", {}).get("green_patterns", [])
-            ]
-        },
-        "document_checks": {
-            "enabled": rule.get("document_checks", {}).get("enabled", False),
-            "required_sections": rule.get("document_checks", {}).get("required_sections", []),
-            "must_contain_keywords": rule.get("document_checks", {}).get("must_contain_keywords", []),
-            "must_not_contain": rule.get("document_checks", {}).get("must_not_contain", []),
-            "red_flags_text": [
-                {
-                    "text": f.get("text"),
-                    "severity": f.get("severity"),
-                    "explanation": f.get("explanation")
-                }
-                for f in rule.get("document_checks", {}).get("red_flags_text", [])
-            ],
-            "green_flags_text": rule.get("document_checks", {}).get("green_flags_text", [])
-        },
+        "common_violations": rule.get("common_violations", []),
+        "best_practices": rule.get("best_practices", []),
+        "required_sections": rule.get("document_checks", {}).get("required_sections", []),
+        "must_contain_keywords": rule.get("document_checks", {}).get("must_contain_keywords", []),
+        "must_not_contain": rule.get("document_checks", {}).get("must_not_contain", []),
+        "phrases_to_avoid": rule.get("phrases_to_avoid", []),
         "scoring": rule.get("scoring", {})
     }
 
