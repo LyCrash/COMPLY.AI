@@ -1,68 +1,536 @@
 {
   "consent_rules": [
     {
-      "rule_id": "consent_001",
-      "description": "Explicit consent must be obtained before data collection",
-      "severity": "critical",
-      "keywords": []
+      "id": "consent_001",
+      "article": "Article 6.1.a",
+      "article_url": "https://gdpr-info.eu/art-6-gdpr/",
+      "title": "Consentement valide et explicite",
+      "priority": "critical",
+      "check_type": "both",
+
+      "code_checks": {
+        "enabled": true,
+        "file_patterns": ["*.html", "*.jsx", "*.tsx", "*.js", "*.ts", "*cookie*.js", "*consent*.js", "*banner*.js"],
+        "file_keywords": ["cookie", "consent", "banner", "tracking", "analytics", "gdpr", "rgpd"],
+        "exclude_patterns": ["node_modules/*", "*.min.js", "dist/*", "build/*"],
+
+        "must_find": [
+          "Mécanisme de demande de consentement (banner/modal)",
+          "Stockage du consentement utilisateur",
+          "Logique conditionnelle: consent AVANT tracking"
+        ],
+
+        "red_patterns": [
+          {
+            "pattern": "checked=\"checked\"",
+            "context": "checkbox consent",
+            "language": "html",
+            "severity": "critical",
+            "explanation": "Case à cocher pré-cochée = violation Article 6.1.a - le consentement doit être une action explicite",
+            "recommendation": "Retirer l'attribut checked, laisser la case vide par défaut"
+          },
+          {
+            "pattern": "checked={true}",
+            "context": "checkbox consent",
+            "language": "jsx",
+            "severity": "critical",
+            "explanation": "Case à cocher pré-cochée en React = violation",
+            "recommendation": "Utiliser checked={false} ou checked={userConsent} avec false par défaut"
+          },
+          {
+            "pattern": "(ga|gtag|analytics).*\\n.*consent",
+            "context": "analytics before consent",
+            "language": "javascript",
+            "severity": "critical",
+            "explanation": "Code analytics exécuté avant vérification du consentement",
+            "recommendation": "Wrapper le code analytics dans if(hasConsent) { ... }"
+          },
+          {
+            "pattern": "setCookie.*\\n(?!.*consent)",
+            "context": "cookie without consent",
+            "language": "javascript",
+            "severity": "high",
+            "explanation": "Cookie défini sans vérifier le consentement",
+            "recommendation": "Vérifier le consentement avant setCookie"
+          },
+          {
+            "pattern": "localStorage.setItem.*\\n(?!.*consent)",
+            "context": "storage without consent",
+            "language": "javascript",
+            "severity": "medium",
+            "explanation": "Données stockées sans consentement explicite",
+            "recommendation": "Demander consentement avant stockage local"
+          }
+        ],
+
+        "green_patterns": [
+          {
+            "pattern": "if.*consent.*accepted.*\\n.*ga\\(",
+            "context": "conditional analytics",
+            "language": "javascript",
+            "explanation": "Analytics conditionné par consentement - conforme"
+          },
+          {
+            "pattern": "getUserConsent\\(\\).*then",
+            "context": "async consent check",
+            "language": "javascript",
+            "explanation": "Vérification asynchrone du consentement - bonne pratique"
+          },
+          {
+            "pattern": "<input.*type=\"checkbox\"(?!.*checked)",
+            "context": "unchecked checkbox",
+            "language": "html",
+            "explanation": "Case non pré-cochée - conforme"
+          }
+        ]
+      },
+
+      "document_checks": {
+        "enabled": true,
+        "required_sections": [
+          "Politique de cookies",
+          "Gestion du consentement",
+          "Finalités des cookies",
+          "Types de cookies utilisés"
+        ],
+        "must_contain_keywords": ["consentement", "cookies", "accepter", "refuser", "opt-in"],
+        "must_not_contain": [
+          "consentement implicite",
+          "acceptation automatique",
+          "en poursuivant votre navigation",
+          "consentement tacite"
+        ],
+        "red_flags_text": [
+          {
+            "text": "en continuant sur ce site, vous acceptez",
+            "severity": "critical",
+            "explanation": "Consentement implicite = non conforme RGPD"
+          },
+          {
+            "text": "nous supposons que vous acceptez",
+            "severity": "critical",
+            "explanation": "Consentement présumé = violation"
+          },
+          {
+            "text": "cookies nécessaires au fonctionnement",
+            "severity": "medium",
+            "explanation": "Vérifier que seuls les cookies strictement nécessaires sont exemptés"
+          }
+        ],
+        "green_flags_text": [
+          "vous pouvez accepter ou refuser",
+          "consentement libre et éclairé",
+          "gérer vos préférences",
+          "retirer votre consentement"
+        ]
+      },
+
+      "agent_prompt": "Tu es un agent RGPD spécialisé dans le consentement (Article 6.1.a).\n\nTon rôle: Vérifier que le consentement est libre, spécifique, éclairé et univoque.\n\nAnalyse les fichiers de code et documents fournis.\n\nPour le CODE:\n- Cherche les implémentations de cookie banners\n- Vérifie si les cookies/tracking sont exécutés AVANT ou APRÈS le consentement\n- Identifie les cases pré-cochées\n- Vérifie la logique conditionnelle du consentement\n\nPour les DOCUMENTS:\n- Vérifie que la politique mentionne le consentement explicite\n- Cherche des formulations de consentement implicite\n- Vérifie que les finalités sont clairement expliquées\n\nRETOURNE un JSON:\n{\n  \"violations\": [{\"pattern\": \"...\", \"file\": \"...\", \"severity\": \"...\", \"explanation\": \"...\"}],\n  \"compliant_elements\": [...],\n  \"score\": 0-100,\n  \"recommendations\": [...]\n}",
+
+      "scoring": {
+        "base_score": 100,
+        "critical_violation": -30,
+        "high_violation": -20,
+        "medium_violation": -10,
+        "good_practice": 5
+      }
     },
+
     {
-      "rule_id": "consent_002",
-      "description": "Consent must be granular and specific",
-      "severity": "high",
-      "keywords": []
+      "id": "consent_002",
+      "article": "Article 7.3",
+      "article_url": "https://gdpr-info.eu/art-7-gdpr/",
+      "title": "Retrait du consentement",
+      "priority": "high",
+      "check_type": "both",
+
+      "code_checks": {
+        "enabled": true,
+        "file_patterns": ["*.html", "*.jsx", "*settings*.js", "*profile*.js", "*preferences*.js", "*unsubscribe*.js"],
+        "file_keywords": ["unsubscribe", "withdraw", "retirer", "désabonner", "consent", "settings", "preferences"],
+
+        "must_find": [
+          "Mécanisme de retrait du consentement",
+          "Bouton/lien de désinscription",
+          "Interface de gestion des préférences"
+        ],
+
+        "red_patterns": [
+          {
+            "pattern": "unsubscribe.*mailto:",
+            "severity": "high",
+            "explanation": "Désinscription par email = processus trop complexe, non conforme Article 7.3",
+            "recommendation": "Implémenter un lien de désinscription en un clic"
+          },
+          {
+            "pattern": "contact.*support.*unsubscribe",
+            "severity": "critical",
+            "explanation": "Obligation de contacter le support = violation - le retrait doit être aussi simple que l'acceptation",
+            "recommendation": "Créer un endpoint de désinscription automatique"
+          }
+        ],
+
+        "green_patterns": [
+          {
+            "pattern": "onClick.*revokeConsent",
+            "explanation": "Bouton de retrait implémenté"
+          },
+          {
+            "pattern": "unsubscribe.*token.*one-click",
+            "explanation": "Désinscription en un clic"
+          }
+        ]
+      },
+
+      "document_checks": {
+        "enabled": true,
+        "required_sections": [
+          "Retrait du consentement",
+          "Gestion des préférences"
+        ],
+        "must_contain_keywords": ["retirer", "révoquer", "modifier", "gérer", "désinscription"],
+        "red_flags_text": [
+          {
+            "text": "contacter notre service",
+            "severity": "critical",
+            "explanation": "Retrait nécessitant contact manuel = non conforme"
+          },
+          {
+            "text": "envoyer un email",
+            "severity": "high",
+            "explanation": "Retrait par email = processus trop lourd"
+          }
+        ]
+      },
+
+      "agent_prompt": "Tu vérifies la conformité Article 7.3 RGPD: retrait du consentement.\n\nVérifie que:\n1. Un mécanisme de retrait existe\n2. Il est aussi simple que l'acceptation\n3. Pas besoin de contacter le support\n4. Lien de désinscription dans les emails\n\nRETOURNE: violations, score, recommendations en JSON.",
+
+      "scoring": {
+        "base_score": 100,
+        "critical_violation": -30,
+        "high_violation": -20,
+        "medium_violation": -10
+      }
     },
+
     {
-      "rule_id": "consent_003",
-      "description": "User must be able to withdraw consent easily",
-      "severity": "critical",
-      "keywords": []
+      "id": "consent_003",
+      "article": "Article 13",
+      "article_url": "https://gdpr-info.eu/art-13-gdpr/",
+      "title": "Information lors de la collecte",
+      "priority": "critical",
+      "check_type": "document",
+
+      "code_checks": {
+        "enabled": false
+      },
+
+      "document_checks": {
+        "enabled": true,
+        "required_sections": [
+          "Identité du responsable de traitement",
+          "Finalités du traitement",
+          "Base légale",
+          "Destinataires des données",
+          "Durée de conservation",
+          "Droits des personnes",
+          "Coordonnées DPO (si applicable)",
+          "Droit de réclamation CNIL"
+        ],
+        "must_contain_keywords": [
+          "responsable de traitement",
+          "finalité",
+          "base légale",
+          "destinataires",
+          "durée",
+          "droits",
+          "CNIL"
+        ],
+        "red_flags_text": [
+          {
+            "text": "nous nous réservons le droit",
+            "severity": "medium",
+            "explanation": "Formulation vague sur l'usage des données"
+          }
+        ]
+      },
+
+      "agent_prompt": "Tu vérifies la politique de confidentialité selon Article 13.\n\nCHECK obligatoires:\n1. Identité responsable traitement\n2. Finalités précises\n3. Base légale claire\n4. Liste destinataires\n5. Durées de conservation\n6. Droits utilisateur (accès, rectification, effacement, etc.)\n7. Droit réclamation CNIL\n\nRETOURNE: sections manquantes, score, recommendations.",
+
+      "scoring": {
+        "base_score": 100,
+        "critical_violation": -15,
+        "high_violation": -10,
+        "medium_violation": -5
+      }
     }
   ],
+
   "security_rules": [
     {
-      "rule_id": "security_001",
-      "description": "Personal data must be encrypted at rest and in transit",
-      "severity": "critical",
-      "keywords": []
+      "id": "security_001",
+      "article": "Article 32",
+      "article_url": "https://gdpr-info.eu/art-32-gdpr/",
+      "title": "Sécurité - Chiffrement et hachage",
+      "priority": "critical",
+      "check_type": "code",
+
+      "code_checks": {
+        "enabled": true,
+        "file_patterns": ["*auth*.py", "*user*.py", "*password*.py", "*hash*.py", "*.py", "*.js", "*.ts"],
+        "file_keywords": ["password", "hash", "encrypt", "bcrypt", "crypto", "auth", "login"],
+
+        "must_find": [
+          "Utilisation bibliothèque hachage (bcrypt, argon2, scrypt)",
+          "Pas de mots de passe en clair"
+        ],
+
+        "red_patterns": [
+          {
+            "pattern": "password\\s*=\\s*['\"](?!\\$2[aby]\\$)[^'\"]+['\"]",
+            "severity": "critical",
+            "explanation": "Mot de passe en clair dans le code = violation grave Article 32",
+            "recommendation": "Utiliser bcrypt ou argon2 pour hasher les mots de passe"
+          },
+          {
+            "pattern": "md5|sha1(?!.*salt)",
+            "context": "password hashing",
+            "severity": "critical",
+            "explanation": "MD5/SHA1 sans salt = algorithme obsolète et non sécurisé",
+            "recommendation": "Utiliser bcrypt, argon2 ou scrypt"
+          },
+          {
+            "pattern": "base64.*password",
+            "severity": "critical",
+            "explanation": "Base64 n'est PAS du chiffrement, les mots de passe sont lisibles",
+            "recommendation": "Utiliser un vrai algorithme de hachage"
+          },
+          {
+            "pattern": "console\\.log.*password|print.*password",
+            "severity": "high",
+            "explanation": "Mot de passe loggé = exposition dans les logs",
+            "recommendation": "Ne jamais logger les mots de passe ou données sensibles"
+          },
+          {
+            "pattern": "API_KEY\\s*=\\s*['\"][^'\"]+['\"]",
+            "severity": "high",
+            "explanation": "Clé API hardcodée dans le code",
+            "recommendation": "Utiliser des variables d'environnement (.env)"
+          },
+          {
+            "pattern": "SECRET_KEY\\s*=\\s*['\"](?!os\\.environ)",
+            "severity": "high",
+            "explanation": "Secret hardcodé au lieu de variable d'environnement",
+            "recommendation": "Utiliser os.environ.get('SECRET_KEY')"
+          }
+        ],
+
+        "green_patterns": [
+          {
+            "pattern": "bcrypt|argon2|scrypt",
+            "explanation": "Algorithme de hachage sécurisé détecté"
+          },
+          {
+            "pattern": "os\\.environ|process\\.env|config\\.",
+            "context": "secrets",
+            "explanation": "Utilisation de variables d'environnement pour secrets"
+          },
+          {
+            "pattern": "encrypt|cipher|AES",
+            "explanation": "Chiffrement des données sensibles"
+          }
+        ]
+      },
+
+      "document_checks": {
+        "enabled": true,
+        "must_contain_keywords": ["chiffrement", "sécurité", "encryption", "protection"],
+        "required_sections": ["Mesures de sécurité"]
+      },
+
+      "agent_prompt": "Tu vérifies la sécurité Article 32 RGPD.\n\nCHERCHE dans le code:\n1. Mots de passe en clair (CRITIQUE)\n2. Algorithmes faibles (MD5, SHA1)\n3. Secrets hardcodés\n4. Données sensibles loggées\n5. Absence de chiffrement\n\nPRIORITÉ: mots de passe en clair = violation la plus grave.\n\nRETOURNE: fichier, ligne, pattern, sévérité, recommandation.",
+
+      "scoring": {
+        "base_score": 100,
+        "critical_violation": -40,
+        "high_violation": -25,
+        "medium_violation": -15
+      }
     },
+
     {
-      "rule_id": "security_002",
-      "description": "Access controls must be implemented",
-      "severity": "high",
-      "keywords": []
-    },
-    {
-      "rule_id": "security_003",
-      "description": "Security breach notification procedures must be defined",
-      "severity": "high",
-      "keywords": []
+      "id": "security_002",
+      "article": "Article 32",
+      "article_url": "https://gdpr-info.eu/art-32-gdpr/",
+      "title": "Sécurité - Exposition de données",
+      "priority": "critical",
+      "check_type": "code",
+
+      "code_checks": {
+        "enabled": true,
+        "file_patterns": ["*.py", "*.js", "*.ts", "*.jsx", "*.tsx"],
+        "file_keywords": ["log", "print", "console", "debug", "email", "phone", "ssn"],
+
+        "red_patterns": [
+          {
+            "pattern": "console\\.log.*email|print.*email",
+            "severity": "high",
+            "explanation": "Email loggé = donnée personnelle exposée dans les logs",
+            "recommendation": "Anonymiser ou supprimer les logs de données personnelles"
+          },
+          {
+            "pattern": "console\\.log.*user(?!Id)|print.*user(?!Id)",
+            "severity": "medium",
+            "explanation": "Objet user complet loggué = risque d'exposition",
+            "recommendation": "Logger uniquement user.id, pas l'objet complet"
+          },
+          {
+            "pattern": "git.*commit.*password|git.*commit.*secret",
+            "severity": "critical",
+            "explanation": "Secrets commités dans Git = exposition permanente",
+            "recommendation": "Utiliser git-secrets, supprimer de l'historique Git"
+          }
+        ],
+
+        "green_patterns": [
+          {
+            "pattern": "logger\\.info.*userId|log.*anonymized",
+            "explanation": "Logs anonymisés - bonne pratique"
+          }
+        ]
+      },
+
+      "document_checks": {
+        "enabled": false
+      },
+
+      "agent_prompt": "Vérifie l'exposition de données personnelles.\n\nCHERCHE:\n- console.log/print avec emails, noms, téléphones\n- Logs de mots de passe\n- Données sensibles dans Git history\n\nRETOURNE: violations avec fichier et ligne.",
+
+      "scoring": {
+        "base_score": 100,
+        "critical_violation": -35,
+        "high_violation": -20,
+        "medium_violation": -10
+      }
     }
   ],
-  "lifecycle_rules": [
+
+  "data_lifecycle_rules": [
     {
-      "rule_id": "lifecycle_001",
-      "description": "Data retention periods must be clearly defined",
-      "severity": "high",
-      "keywords": []
+      "id": "lifecycle_001",
+      "article": "Article 5.1.e",
+      "article_url": "https://gdpr-info.eu/art-5-gdpr/",
+      "title": "Limitation de conservation",
+      "priority": "high",
+      "check_type": "both",
+
+      "code_checks": {
+        "enabled": true,
+        "file_patterns": ["*cron*.py", "*scheduler*.js", "*cleanup*.py", "*retention*.py", "*.sql"],
+        "file_keywords": ["delete", "cleanup", "retention", "expire", "ttl", "purge"],
+
+        "must_find": [
+          "Mécanisme de suppression automatique",
+          "Politique de rétention implémentée"
+        ],
+
+        "red_patterns": [
+          {
+            "pattern": "DELETE.*WHERE.*created_at",
+            "severity": "low",
+            "context": "manual deletion only",
+            "explanation": "Suppression manuelle uniquement, pas d'automatisation"
+          }
+        ],
+
+        "green_patterns": [
+          {
+            "pattern": "cron|schedule.*delete|cleanup",
+            "explanation": "Tâche automatique de suppression détectée"
+          },
+          {
+            "pattern": "TTL|expire_at|retention_days",
+            "explanation": "Mécanisme de rétention implémenté"
+          }
+        ]
+      },
+
+      "document_checks": {
+        "enabled": true,
+        "required_sections": ["Durée de conservation", "Suppression des données"],
+        "must_contain_keywords": ["conservation", "suppression", "durée", "rétention"],
+        "red_flags_text": [
+          {
+            "text": "conservation indéfinie|conservation illimitée",
+            "severity": "critical",
+            "explanation": "Conservation indéfinie = violation Article 5.1.e"
+          }
+        ]
+      },
+
+      "agent_prompt": "Vérifie Article 5.1.e: limitation de conservation.\n\nCHERCHE:\n- Politique de rétention documentée\n- Durées spécifiées par type de données\n- Mécanismes de suppression automatique dans le code\n\nRETOURNE: politique présente?, durées définies?, automatisation?, violations.",
+
+      "scoring": {
+        "base_score": 100,
+        "critical_violation": -25,
+        "high_violation": -15,
+        "medium_violation": -10
+      }
     },
+
     {
-      "rule_id": "lifecycle_002",
-      "description": "Data deletion procedures must be implemented",
-      "severity": "critical",
-      "keywords": []
-    },
-    {
-      "rule_id": "lifecycle_003",
-      "description": "Right to data portability must be provided",
-      "severity": "high",
-      "keywords": []
-    },
-    {
-      "rule_id": "lifecycle_004",
-      "description": "Right to be forgotten must be implemented",
-      "severity": "critical",
-      "keywords": []
+      "id": "lifecycle_002",
+      "article": "Article 17",
+      "article_url": "https://gdpr-info.eu/art-17-gdpr/",
+      "title": "Droit à l'effacement",
+      "priority": "critical",
+      "check_type": "both",
+
+      "code_checks": {
+        "enabled": true,
+        "file_patterns": ["*delete*.py", "*user*.py", "*account*.py", "*api*.py", "*routes*.py"],
+        "file_keywords": ["delete", "remove", "account", "user", "gdpr"],
+
+        "must_find": [
+          "Endpoint de suppression de compte",
+          "Fonction deleteUser ou équivalent"
+        ],
+
+        "red_patterns": [
+          {
+            "pattern": "soft.*delete|is_deleted.*=.*true",
+            "severity": "medium",
+            "explanation": "Soft delete uniquement = données toujours présentes en base",
+            "recommendation": "Implémenter hard delete ou anonymisation complète"
+          }
+        ],
+
+        "green_patterns": [
+          {
+            "pattern": "DELETE.*FROM.*users.*WHERE",
+            "explanation": "Hard delete implémenté"
+          },
+          {
+            "pattern": "anonymize.*user|pseudonymize",
+            "explanation": "Anonymisation des données"
+          }
+        ]
+      },
+
+      "document_checks": {
+        "enabled": true,
+        "required_sections": ["Droit à l'effacement", "Suppression de compte"],
+        "must_contain_keywords": ["effacement", "suppression", "droit à l'oubli"]
+      },
+
+      "agent_prompt": "Vérifie Article 17: droit à l'effacement.\n\nCHERCHE:\n- Endpoint DELETE /users/:id ou équivalent\n- Fonction de suppression de compte\n- Hard delete vs soft delete\n- Documentation du processus\n\nRETOURNE: mécanisme présent?, type suppression, délai traitement.",
+
+      "scoring": {
+        "base_score": 100,
+        "critical_violation": -30,
+        "high_violation": -20,
+        "medium_violation": -10
+      }
     }
   ]
 }
