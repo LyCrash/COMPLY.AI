@@ -1,10 +1,17 @@
-from fastapi import FastAPI, File, UploadFile, Form
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 import os
 from dotenv import load_dotenv
+import shutil
+from git import Repo
+from pathlib import Path
 
 load_dotenv()
+
+# Directory to store cloned repositories
+REPOS_DIR = Path("./cloned_repos")
+REPOS_DIR.mkdir(exist_ok=True)
 
 app = FastAPI(title="COMPLY.AI - RGPD Compliance Scanner")
 
@@ -18,10 +25,60 @@ app.add_middleware(
 )
 
 
+def clone_github_repo(repo_url: str) -> str:
+    """
+    Clone a GitHub repository and return the local path.
+    
+    Args:
+        repo_url: Full GitHub repository URL
+        
+    Returns:
+        Local path where repository is cloned
+        
+    Raises:
+        HTTPException: If cloning fails
+    """
+    try:
+        # Extract repo name from URL
+        repo_name = repo_url.rstrip("/").split("/")[-1].replace(".git", "")
+        repo_path = REPOS_DIR / repo_name
+        
+        # Remove existing directory if present
+        if repo_path.exists():
+            shutil.rmtree(repo_path)
+        
+        # Clone the repository
+        Repo.clone_from(repo_url, repo_path)
+        return str(repo_path)
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to clone repository: {str(e)}")
+
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
     return {"status": "healthy", "service": "COMPLY.AI Backend"}
+
+
+@app.post("/clone-repo")
+async def clone_repo(repo_url: str):
+    """
+    Clone a GitHub repository.
+    
+    Args:
+        repo_url: Full GitHub repository URL (e.g., https://github.com/user/repo.git)
+        
+    Returns:
+        Local path where repository is cloned
+    """
+    repo_path = clone_github_repo(repo_url)
+    return {
+        "status": "success",
+        "repo_url": repo_url,
+        "local_path": repo_path,
+        "message": "Repository cloned successfully"
+    }
 
 
 @app.post("/analyze")
