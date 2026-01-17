@@ -6,6 +6,14 @@
       "article_url": "https://gdpr-info.eu/art-6-gdpr/",
       "title": "Consentement valide et explicite",
       "priority": "critical",
+      "description": "Le consentement doit être libre, spécifique, éclairé et univoque. Il ne peut pas être implicite ou présumé. Chaque case à cocher doit être décochée par défaut et les utilisateurs doivent donner leur consentement de manière active et explicite.",
+      "common_violations": [
+        {"issue": "Cases à cocher pré-cochées", "severity": "critical", "explanation": "Les cases de consentement ne peuvent pas être pré-cochées. Le consentement doit être une action explicite de l'utilisateur.", "recommendation": "S'assurer que toutes les cases de consentement sont décochées par défaut"},
+        {"issue": "Analytics exécutés avant le consentement", "severity": "critical", "explanation": "Le code de tracking ne doit pas s'exécuter avant que l'utilisateur ait donné son consentement.", "recommendation": "Encapsuler le code analytics dans une condition if(userHasConsented)"},
+        {"issue": "Consentement implicite", "severity": "critical", "explanation": "Les formulations implicites créent un consentement non-conforme au RGPD.", "recommendation": "Utiliser des formulations explicites comme 'Accepter' et 'Refuser'"}
+      ],
+      "best_practices": ["Implémenter un cookie banner ou modal avec options 'Accepter' et 'Refuser'", "Stocker le choix de l'utilisateur de manière sécurisée", "Fournir une interface de gestion des préférences", "Permettre le retrait du consentement facilement", "Documenter clairement les types de cookies utilisés"],
+      "phrases_to_avoid": ["en continuant sur ce site, vous acceptez", "nous supposons que vous acceptez", "consentement implicite", "acceptation automatique", "en poursuivant votre navigation"],
       "check_type": "both",
 
       "code_checks": {
@@ -142,6 +150,32 @@
       "article_url": "https://gdpr-info.eu/art-7-gdpr/",
       "title": "Retrait du consentement",
       "priority": "high",
+      "description": "Les utilisateurs doivent pouvoir retirer leur consentement aussi facilement qu'ils l'ont donné. Le processus de retrait ne doit pas être plus complexe que celui d'acceptation et doit être instantané.",
+      "common_violations": [
+        {
+          "issue": "Retrait du consentement par email uniquement",
+          "severity": "high",
+          "explanation": "Obliger l'utilisateur à envoyer un email pour se désinscrire = processus trop complexe et non conforme.",
+          "recommendation": "Implémenter un lien de désinscription en un clic dans les emails ou une page de paramètres de compte"
+        },
+        {
+          "issue": "Obligation de contacter le support pour se désinscrire",
+          "severity": "critical",
+          "explanation": "Le retrait doit être automatique et instantané, pas nécessiter une intervention manuelle du support.",
+          "recommendation": "Créer un endpoint de désinscription automatique ou un formulaire de retrait"
+        }
+      ],
+      "best_practices": [
+        "Fournir un lien de désinscription en un clic dans tous les emails marketing",
+        "Implémenter une interface de gestion des préférences facile d'accès",
+        "Permettre le retrait du consentement sans justification",
+        "Traiter la demande de retrait immédiatement"
+      ],
+      "phrases_to_avoid": [
+        "contacter notre service",
+        "envoyer un email",
+        "en accord avec notre équipe"
+      ],
       "check_type": "both",
 
       "code_checks": {
@@ -219,6 +253,41 @@
       "article_url": "https://gdpr-info.eu/art-13-gdpr/",
       "title": "Information lors de la collecte",
       "priority": "critical",
+      "description": "Au moment de la collecte des données, l'entreprise doit fournir des informations complètes et transparentes. Cela inclut l'identité du responsable, les finalités, la base légale, les destinataires, et les droits de l'utilisateur.",
+      "common_violations": [
+        {
+          "issue": "Informations incomplètes ou manquantes",
+          "severity": "critical",
+          "explanation": "La politique doit décrire précisément COMMENT les données sont utilisées, qui y accède, combien de temps elles sont conservées.",
+          "recommendation": "S'assurer que toutes les sections obligatoires sont présentes et détaillées"
+        },
+        {
+          "issue": "Formulations vagues ou floues",
+          "severity": "medium",
+          "explanation": "Des formulations comme 'nous nous réservons le droit' ne spécifient pas précisément les finalités.",
+          "recommendation": "Être précis: énumérer les finalités exactes"
+        },
+        {
+          "issue": "Base légale non mentionnée",
+          "severity": "critical",
+          "explanation": "Chaque traitement de données doit avoir une base légale explicite.",
+          "recommendation": "Déclarer clairement la base légale pour chaque type de traitement"
+        }
+      ],
+      "best_practices": [
+        "Fournir une politique de confidentialité claire, complète et facilement accessible",
+        "Lister toutes les finalités du traitement de manière exhaustive",
+        "Spécifier les destinataires des données (internes, sous-traitants, tiers)",
+        "Indiquer les durées de conservation pour chaque catégorie de données",
+        "Lister tous les droits des utilisateurs avec comment les exercer",
+        "Inclure les coordonnées de contact du responsable de traitement et du DPO"
+      ],
+      "phrases_to_avoid": [
+        "nous nous réservons le droit",
+        "selon nos intérêts",
+        "à notre discrétion",
+        "finalités similaires"
+      ],
       "check_type": "document",
 
       "code_checks": {
@@ -273,6 +342,14 @@
       "article_url": "https://gdpr-info.eu/art-32-gdpr/",
       "title": "Sécurité - Chiffrement et hachage",
       "priority": "critical",
+      "description": "Les mots de passe et données sensibles doivent être protégés par des mécanismes de sécurité robustes. Cela inclut le hachage sécurisé des mots de passe avec des algorithmes modernes (bcrypt, argon2) et la non-exposition des secrets en dur.",
+      "common_violations": [
+        {"issue": "Mots de passe en clair", "severity": "critical", "explanation": "C'est la violation la plus grave. Les mots de passe ne doivent jamais être stockés en clair dans le code ou la base.", "recommendation": "Utiliser bcrypt, argon2 ou scrypt pour hasher les mots de passe"},
+        {"issue": "Algorithmes faibles (MD5, SHA1)", "severity": "critical", "explanation": "MD5 et SHA1 sont obsolètes et peuvent être crackés facilement.", "recommendation": "Remplacer par bcrypt ou argon2 avec au minimum 10 rounds"},
+        {"issue": "Secrets hardcodés", "severity": "high", "explanation": "Les secrets dans le code peuvent être exposés via Git et les backups.", "recommendation": "Utiliser des variables d'environnement (.env) ou un gestionnaire de secrets"}
+      ],
+      "best_practices": ["Utiliser bcrypt avec au minimum 10 rounds de salage", "Stocker tous les secrets dans des variables d'environnement", "Implémenter HTTPS/TLS pour tous les échanges", "Chiffrer les données sensibles en base de données", "Ne jamais logger les mots de passe", "Implémenter une limitation de tentatives de connexion"],
+      "phrases_to_avoid": [],
       "check_type": "code",
 
       "code_checks": {
@@ -364,6 +441,14 @@
       "article_url": "https://gdpr-info.eu/art-32-gdpr/",
       "title": "Sécurité - Exposition de données",
       "priority": "critical",
+      "description": "Les données personnelles ne doivent pas être exposées dans les logs, les fichiers temporaires, ou l'historique Git. Toute exposition de données sensibles constitue une violation grave.",
+      "common_violations": [
+        {"issue": "Données personnelles loggées", "severity": "high", "explanation": "Les emails, noms, téléphones loggés peuvent être exposés dans les fichiers de log accessibles.", "recommendation": "Anonymiser les logs (logger seulement user.id, pas user.email)"},
+        {"issue": "Objets utilisateur complets loggés", "severity": "medium", "explanation": "console.log(user) expose toutes les informations de l'utilisateur.", "recommendation": "Logger seulement l'ID ou des informations non-sensibles"},
+        {"issue": "Secrets dans Git", "severity": "critical", "explanation": "Une fois dans Git, un secret reste dans l'historique à jamais, même après suppression.", "recommendation": "Utiliser git-secrets pour prévenir les commits de secrets"}
+      ],
+      "best_practices": ["Implémenter un système de logging avec masquage automatique", "Utiliser git-secrets et pre-commit hooks", "Ne logger que l'essentiel pour le debugging", "Anonymiser les données dans les logs", "Archiver et supprimer les anciens logs régulièrement", "Restreindre l'accès aux logs aux administrateurs"],
+      "phrases_to_avoid": [],
       "check_type": "code",
 
       "code_checks": {
@@ -422,6 +507,13 @@
       "article_url": "https://gdpr-info.eu/art-5-gdpr/",
       "title": "Limitation de conservation",
       "priority": "high",
+      "description": "Les données personnelles ne doivent pas être conservées plus longtemps que nécessaire. Une politique de rétention claire doit être définie et appliquée automatiquement par le système.",
+      "common_violations": [
+        {"issue": "Conservation indéfinie", "severity": "critical", "explanation": "Sans politique de rétention, les données peuvent être conservées indéfiniment.", "recommendation": "Définir des durées de conservation précises pour chaque type de données"},
+        {"issue": "Pas de suppression automatique", "severity": "high", "explanation": "Si la suppression dépend d'une action manuelle, les données ne seront jamais supprimées.", "recommendation": "Implémenter un système automatisé (cron, TTL, jobs)"}
+      ],
+      "best_practices": ["Définir une politique de rétention précise par type de données", "Implémenter une suppression automatique avec tâches planifiées", "Utiliser l'archivage pour les données longtemps conservées", "Documenter la politique dans la politique de confidentialité", "Tester régulièrement le processus de suppression", "Maintenir un registre des suppressions effectuées"],
+      "phrases_to_avoid": ["conservation indéfinie", "conservation illimitée", "aussi longtemps que nécessaire"],
       "check_type": "both",
 
       "code_checks": {
@@ -484,6 +576,14 @@
       "article_url": "https://gdpr-info.eu/art-17-gdpr/",
       "title": "Droit à l'effacement",
       "priority": "critical",
+      "description": "Les utilisateurs ont le droit de demander l'effacement de leurs données personnelles. L'entreprise doit implémenter un mécanisme pour traiter ces demandes rapidement et complètement.",
+      "common_violations": [
+        {"issue": "Pas d'endpoint de suppression", "severity": "critical", "explanation": "L'utilisateur doit pouvoir supprimer son compte et ses données de manière autonome.", "recommendation": "Implémenter un endpoint DELETE /users/:id ou une page de suppression de compte"},
+        {"issue": "Soft delete au lieu de hard delete", "severity": "medium", "explanation": "Avec soft delete, les données restent en base et peuvent être récupérées.", "recommendation": "Implémenter hard delete ou anonymisation complète des données"},
+        {"issue": "Données résiduelles", "severity": "high", "explanation": "Les données peuvent rester dans les backups, logs, cache ou archivages.", "recommendation": "Supprimer toutes les traces: données, logs, backups, cache"}
+      ],
+      "best_practices": ["Fournir une interface simple pour supprimer son compte", "Implémenter hard delete avec suppression complète", "Anonymiser les données si hard delete impossible", "Supprimer les données associées (photos, préférences)", "Traiter rapidement (max 30 jours)", "Confirmer la suppression par email", "Documenter le processus dans la politique de confidentialité"],
+      "phrases_to_avoid": ["suppression non garantie", "données peuvent être conservées", "suppression à notre discrétion"],
       "check_type": "both",
 
       "code_checks": {
