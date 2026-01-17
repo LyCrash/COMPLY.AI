@@ -1,0 +1,66 @@
+PRIVACY POLICY - ACME CORPORATION
+
+Last Updated: January 2020
+
+1. DATA COLLECTION
+
+We collect all data from users when they visit our website. This includes but is not limited to:
+- Full name, email, phone number, address
+- IP addresses, browsing history, cookies
+- Credit card information
+- Social security numbers
+- Medical records
+- Location data (24/7 tracking)
+
+By using our service, you automatically consent to all data collection.
+
+2. HOW WE USE YOUR DATA
+
+We may use your personal information for any purpose we deem necessary, including:
+- Marketing and advertising (we will share with our 500+ partners)
+- Selling to third parties
+- Background checks
+- Training AI models
+- Any future purposes we decide
+
+3. DATA SHARING
+
+Your data will be shared with:
+- All our business partners
+- Marketing agencies worldwide
+- Government entities
+- Anyone who requests it
+- Third-party data brokers
+
+We do not notify users when sharing their data.
+
+4. DATA RETENTION
+
+We keep your data forever. Even if you delete your account, we retain all information indefinitely for "business purposes."
+
+5. YOUR RIGHTS
+
+You have no right to:
+- Access your data
+- Correct inaccurate data
+- Delete your data
+- Object to processing
+- Withdraw consent
+
+6. CONTACT
+
+If you have questions, too bad. We don't respond to privacy inquiries.
+
+---
+
+RGPD VIOLATIONS IN THIS POLICY:
+- No explicit consent mechanism
+- Pre-ticked consent by using service
+- Unlimited data collection without justification
+- No data minimization
+- Sharing data without user knowledge
+- Indefinite data retention
+- No user rights (access, deletion, portability)
+- No DPO contact information
+- No legal basis for processing
+- No information about international transfers

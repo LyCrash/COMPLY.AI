@@ -1,0 +1,68 @@
+{
+  "consent_rules": [
+    {
+      "rule_id": "consent_001",
+      "description": "Explicit consent must be obtained before data collection",
+      "severity": "critical",
+      "keywords": []
+    },
+    {
+      "rule_id": "consent_002",
+      "description": "Consent must be granular and specific",
+      "severity": "high",
+      "keywords": []
+    },
+    {
+      "rule_id": "consent_003",
+      "description": "User must be able to withdraw consent easily",
+      "severity": "critical",
+      "keywords": []
+    }
+  ],
+  "security_rules": [
+    {
+      "rule_id": "security_001",
+      "description": "Personal data must be encrypted at rest and in transit",
+      "severity": "critical",
+      "keywords": []
+    },
+    {
+      "rule_id": "security_002",
+      "description": "Access controls must be implemented",
+      "severity": "high",
+      "keywords": []
+    },
+    {
+      "rule_id": "security_003",
+      "description": "Security breach notification procedures must be defined",
+      "severity": "high",
+      "keywords": []
+    }
+  ],
+  "lifecycle_rules": [
+    {
+      "rule_id": "lifecycle_001",
+      "description": "Data retention periods must be clearly defined",
+      "severity": "high",
+      "keywords": []
+    },
+    {
+      "rule_id": "lifecycle_002",
+      "description": "Data deletion procedures must be implemented",
+      "severity": "critical",
+      "keywords": []
+    },
+    {
+      "rule_id": "lifecycle_003",
+      "description": "Right to data portability must be provided",
+      "severity": "high",
+      "keywords": []
+    },
+    {
+      "rule_id": "lifecycle_004",
+      "description": "Right to be forgotten must be implemented",
+      "severity": "critical",
+      "keywords": []
+    }
+  ]
+}
